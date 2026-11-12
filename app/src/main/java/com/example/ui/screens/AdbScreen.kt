@@ -81,6 +81,8 @@ fun AdbScreen(viewModel: MainViewModel) {
 
     val adbStatusText by viewModel.adbStatusText.collectAsState()
     val isAdbConnected by viewModel.isAdbConnected.collectAsState()
+    val isShizukuRunning by viewModel.isShizukuRunning.collectAsState()
+    val isShizukuGranted by viewModel.isShizukuGranted.collectAsState()
 
     Column(
         modifier = Modifier
@@ -107,14 +109,104 @@ fun AdbScreen(viewModel: MainViewModel) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Підключення через Wireless Debugging або Termux",
+                    text = "Постійне підключення через Shizuku або Wireless ADB",
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
             }
         }
 
-        // Connection Card
+        // 🌟 PRIORITY: Shizuku Card for Zero-Hassle Persistent ADB
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isShizukuGranted) Color(0xFF09291D) else Color(0xFF131D2E)
+            ),
+            border = androidx.compose.foundation.BorderStroke(
+                1.5.dp,
+                if (isShizukuGranted) NeonEmerald else NeonCyan
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (isShizukuGranted) Icons.Default.CheckCircle else Icons.Default.Memory,
+                        contentDescription = null,
+                        tint = if (isShizukuGranted) NeonEmerald else NeonCyan,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (isShizukuGranted) "🟢 Shizuku ADB: АКТИВНО (Постійний доступ)" else "⚡ Постійний ADB через Shizuku",
+                        color = if (isShizukuGranted) NeonEmerald else NeonCyan,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = if (isShizukuGranted) {
+                        "Додаток має прямі привілеї ADB (UID 2000 shell). Всі запити AI, команди та автоматизація працюють напряму без повторного введення портів чи спарювань!"
+                    } else if (isShizukuRunning) {
+                        "Сервіс Shizuku запущено на телефоні! Надайте додатку дозвіл, щоб назавжди позбутися необхідності спарювати порти."
+                    } else {
+                        "Використовуйте Shizuku, щоб надати постійний ADB доступ один раз і не підключати Wireless Debugging вручну кожного разу."
+                    },
+                    color = Color(0xFFE2E8F0),
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (!isShizukuGranted) {
+                        Button(
+                            onClick = { viewModel.requestShizukuPermission() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = NeonEmerald,
+                                contentColor = Color.Black
+                            ),
+                            modifier = Modifier.weight(1f).testTag("shizuku_grant_button")
+                        ) {
+                            Text("Надати дозвіл Shizuku", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            val shizukuIntent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                                ?: context.packageManager.getLaunchIntentForPackage("moe.shizuku.manager")
+                            if (shizukuIntent != null) {
+                                context.startActivity(shizukuIntent)
+                            } else {
+                                Toast.makeText(context, "Додаток Shizuku не знайдено на пристрої", Toast.LENGTH_LONG).show()
+                            }
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = NeonCyan),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, NeonCyan.copy(alpha = 0.5f)),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Відкрити Shizuku", fontSize = 12.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = { viewModel.checkShizukuStatus() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Check Shizuku", modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+        }
+
+        // Connection Card (Wireless ADB Fallback)
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = CyberDark),

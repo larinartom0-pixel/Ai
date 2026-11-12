@@ -79,7 +79,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isAdbConnected = MutableStateFlow(false)
     val isAdbConnected: StateFlow<Boolean> = _isAdbConnected.asStateFlow()
 
+    private val _isShizukuRunning = MutableStateFlow(false)
+    val isShizukuRunning: StateFlow<Boolean> = _isShizukuRunning.asStateFlow()
+
+    private val _isShizukuGranted = MutableStateFlow(false)
+    val isShizukuGranted: StateFlow<Boolean> = _isShizukuGranted.asStateFlow()
+
     init {
+        checkShizukuStatus()
+
         // Automatically select or create first session if none exists
         viewModelScope.launch {
             sessions.collect { list ->
@@ -88,6 +96,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun checkShizukuStatus() {
+        viewModelScope.launch {
+            val available = adbExecutor.isShizukuAvailable()
+            val granted = adbExecutor.hasShizukuPermission()
+            _isShizukuRunning.value = available
+            _isShizukuGranted.value = granted
+            if (granted) {
+                _isAdbConnected.value = true
+                _adbStatusText.value = "🟢 Shizuku ADB активний (UID 2000). Постійне підключення активовано!"
+            }
+        }
+    }
+
+    fun requestShizukuPermission() {
+        adbExecutor.requestShizukuPermission()
+        checkShizukuStatus()
     }
 
     fun setTab(tab: AppTab) {

@@ -42,12 +42,10 @@ app/build/outputs/apk/release/app-release.apk
    - Вручну: вкладка **Actions** на GitHub -> **Android CI & Release Builder** -> кнопка **Run workflow**.
 
 2. **Що створює білдер**:
-   - `AIAgent-Release-APK` — готовий підписаний APK файл для встановлення на телефон.
-   - `AIAgent-Debug-APK` — налагоджувальний APK.
-   - `AIAgent-Release-AAB` — App Bundle для публікації в Google Play.
+   - Тільки один готовий файл: `AIAgent-Release-APK` — підписаний релізний APK, оптимізований для встановлення без зайвих налагоджувальних файлів та AAB.
 
 3. **Де скачати готовий APK**:
    - Перейдіть у вкладку **Actions** вашого GitHub репозиторію.
-   - Виберіть останній запуск збірки (**Build & Sign APK**).
+   - Виберіть останній запуск збірки (**Build Signed Release APK**).
    - У розділі **Artifacts** внизу сторінки скачайте `AIAgent-Release-APK`.
-   - При публікації з тегом `v*` білдер автоматично створить офіційний **GitHub Release** з прикріпленими файлами APK та AAB!
+   - При пуші з тегом `v*` білдер автоматично прикріпить готовий APK до **GitHub Releases**!
