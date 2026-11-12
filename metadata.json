@@ -1,0 +1,6 @@
+{
+  "name": "AIAgent Terminal",
+  "description": "Autonomous AI coding agent with Python runner, local terminal, ADB integration, context memory, and 30s auto-retry rate-limit handling.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
